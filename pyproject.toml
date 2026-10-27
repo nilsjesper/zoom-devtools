@@ -1,0 +1,25 @@
+[project]
+name = "zoomdev"
+version = "0.1.0"
+description = "Dev-only tools for MIDISTOMP pedals: LCD screenshots, patch backups, MIDI monitor, dev builds"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    # zoomms from upstream main, pinned: parts/AIS/patcher for builds, the MIDI port finder
+    "zoomms @ git+https://github.com/matujuice/zoom-ms-midistomp@c8d3e1ba04e71bbae7919e256f2b2f611fca409a",
+    "mido>=1.3",
+    "python-rtmidi>=1.5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+zoomdev = "zoomdev.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["zoomdev"]
