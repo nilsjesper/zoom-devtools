@@ -1,0 +1,42 @@
+# LCD screenshot over SysEx (dev builds only). MS-70CDR 2.10 OS, so MIDISTOMP v1.2+.
+#   F0 52 00 <model> 7C <page> F7 -> F0 52 00 <model> 7C <page> <128 bytes, 7-bit packed> F7
+#   Pages 0-7: LCD plane A, 8-15: plane B (the screen shows A xor B); page 0
+#   snapshots both planes first. `zoomdev screenshot` asks for all 16 and writes a PNG.
+# Design and addresses: docs/screenshot.md. Placement: docs/memory.md.
+# The section hex is assembled from its source by scripts/update_hex.py;
+# tests/test_screenshot.py checks it still matches.
+name: screenshot
+description: LCD screenshot over SysEx (command 0x7C)
+builds: [ms70cdr-2.10]
+write:
+  # Task_MIDI SysEx state table (0xC00EF2D0), state 3 (bytes after F0 52 00 <model>):
+  # stock 0xC00AED88 -> sysex_bytes
+  - model: ms70cdr-2.10
+    addr: 0xC00EF2DC
+    expect: "88ed0ac0"
+    data: "00407fc0"
+section:
+  - model: ms70cdr-2.10
+    addr: 0xC07F4000
+    source: asm/screenshot/screenshot.S
+    data: >-
+      28fca300e83fe000da0f8c001007004000800000283e000078ca000174020401
+      900a00b0008000005aa304007e3a000090080000008000006402040100600000
+      900600b0008000005a2a040190040070008000005aa308007e3a0000d80f1802
+      920400102a7077006a05600062030000008000002ac476006a05600062030000
+      0080000052f8ff07f642bc01f4623c0558ef1105d80fa800900b008000800000
+      28003400e8c008002a002401ea3f60012a808000e20304035acf9b03a2039c00
+      643700015ae087001000004000400000c437080100000000a20398006cc90002
+      5aa37c022a70bf026a06e0026203140062818501287800022a22f0026a05e002
+      6203140062818201282900022a22f0026a05e002620314006281870128000002
+      2a22f0026a05e00262031400628184011cd400022a22f0026a05e00262031400
+      62818101283e00022a22f0026a05e0026203140062818601d80f28022a22f002
+      6a05e002620314006281830128002402e83f6002a0ec2800780010022a400002
+      58a300032a30f0026a05e0026203140062818501a87b00022a22f0026a05e002
+      62031400628182016cc900022a80b502ea06e0026203140062818701e642bc01
+      e4623c05520880070040000062030c0000800000000000000000000000000000
+# RAM used at run time but not loaded. zoomdev build checks that nothing in the
+# updater it is given loads or claims any of this, the section above included.
+ram:
+  - {addr: 0xC07F47F8, size: 4, what: "FLAG: this SysEx is ours"}
+  - {addr: 0xC07F4800, size: 2048, what: "SNAP: copy of LCD planes A and B"}
